@@ -1,7 +1,7 @@
 {
-  "name": "doceria",
+  "name": "restaurante",
   "version": "1.0.0",
-  "description": "<!-- ![marcador](https://img.shields.io/github/languages/top/pedroacioly27/sistema-colegio)  ![marcador2](https://img.shields.io/github/repo-size/pedroacioly27/sistema-colegio\r ) -->",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon ./src/index.js"
