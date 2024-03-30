@@ -6,7 +6,7 @@ const { cadastroUsuario, login, usuarioLogado, atualizarDadosUsuario } = require
 const { autenticacaoUsuario } = require('./controladores/intermediarios/autenticacao')
 const validarCorpoRequisicao = require('./controladores/intermediarios/validarCorpoDaRequisicao')
 const schemaUsuario = require('./validacoes/schemaUsuario')
-const { adicionarTransacao } = require('./controladores/transacoes')
+const { adicionarTransacao, atualizarTransacao, transacoes, extrato, deletarTransacao } = require('./controladores/transacoes')
 const schemaLogin = require('./validacoes/schemaLogin')
 const schemaInsumo = require('./validacoes/schemaInsumo')
 const schemaInsumoAoPreparo = require('./validacoes/schemaInsumoAoPreparo')
@@ -15,6 +15,7 @@ const schemaInsumoAReceita = require('./validacoes/schemaInsumoAReceita')
 const schemaPreparoAReceita = require('./validacoes/schemaPreparoAReceita')
 const schemaReceita = require('./validacoes/schemaReceita')
 const schemaTransacao = require('./validacoes/schemaTransacao')
+const schemaAtualizarTransacao = require('./validacoes/schemaAtualizarTransacao')
 const rotas = express()
 
 
@@ -43,7 +44,11 @@ rotas.delete('/receitas', deletarReceita)
 rotas.post('/receitas/insumo', validarCorpoRequisicao(schemaInsumoAReceita), adicionarInsumoAReceita)
 rotas.post('/receitas/preparo', validarCorpoRequisicao(schemaPreparoAReceita), adicionarPreparoAReceita)
 
-rotas.post('/transacoes',validarCorpoRequisicao(schemaTransacao), adicionarTransacao)
+rotas.post('/transacoes', validarCorpoRequisicao(schemaTransacao), adicionarTransacao)
+rotas.put('/transacoes/:id', validarCorpoRequisicao(schemaAtualizarTransacao), atualizarTransacao)
+rotas.get('/transacoes', transacoes)
+rotas.get('/transacoes/extrato', extrato)
+rotas.delete('/transacoes/:id', deletarTransacao)
 
 module.exports = rotas
 
