@@ -21,6 +21,7 @@
 
 ## Transações
 - ### Cadastrar transação(entrada ou saída)
+- ### Visualizar transações e extrato
 - ### Atualizar transação
 - ### Deletar transação
 
