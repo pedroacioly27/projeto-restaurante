@@ -30,13 +30,15 @@ const receitas = async (req, res) => {
 
             for (let preparo of buscarPreparos) {
                 const preparos = await knex('preparos').where({ id: preparo.preparo_id, usuario_id: id }).first()
+                const preparoReceita = await knex('preparo_receita')
+                    .where({ usuario_id: id, preparo_id: preparos.id, receita_id: buscarReceita.id })
+                    .first()
                 const buscarInsumosDoPreparo = await knex('insumo_preparo').where({ preparo_id: preparos.id, usuario_id: id })
                 let valorUtilizadoDoPreparo = 0
                 const insumoParaOPreparo = []
                 for (let insumo of buscarInsumosDoPreparo) {
                     const insumos = await knex('insumos').where({ id: insumo.insumo_id, usuario_id: id }).first()
                     valorUtilizadoDoPreparo += ((insumos.valor / insumos.peso) * insumo.peso_utilizado)
-
                     const formatarInsumos = {
                         insumo: insumos.nome,
                         valor_utilizado: `R$${((insumos.valor / insumos.peso) * insumo.peso_utilizado / 100).toFixed(2)}`
@@ -46,12 +48,12 @@ const receitas = async (req, res) => {
                 }
                 const formatarPreparos = {
                     preparo: preparos.nome,
-                    valor_utilizado: `R$${(valorUtilizadoDoPreparo / 100).toFixed(2)}`,
+                    valor_utilizado: `R$${((valorUtilizadoDoPreparo / preparos.peso) * preparoReceita.peso_utilizado / 100).toFixed(2)}`,
                     insumos: insumoParaOPreparo
                 }
 
                 preparoFormatado.push(formatarPreparos)
-                valorUtilizado += valorUtilizadoDoPreparo
+                valorUtilizado += (valorUtilizadoDoPreparo / preparos.peso) * preparoReceita.peso_utilizado
             }
             const gastosIncalculaveis = valorUtilizado + (valorUtilizado) / 4
             return res.json({
