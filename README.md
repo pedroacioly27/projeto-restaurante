@@ -7,10 +7,13 @@
 
 ![marcador](https://img.shields.io/github/languages/top/pedroacioly27/projetoRestaurante)  ![marcador2](https://img.shields.io/github/repo-size/pedroacioly27/projetoRestaurante
 )
+# Problema que o projeto soluciona:
+
+### Muitas vezes quem tem um restaurante se depara com um problema, comprar insumos hoje por um preço, e amanhã todos os preços estão diferentes, assim como vamos precificar as receita? Será que estão perdendo dinheiro? Vamos descobrir!
 
 # Sobre o projeto
 
-### Projeto para portifólio, construído em Node.js e utilizando formatação JSON, esta API oferece operações CRUD eficientes para restaurantes permitindo fácil cadastro, atualização, listagem e remoção de insumos, preparos e receitas, além de permitir busca precisa utilizando identificadores, facilitando a recuperação de informações específicas.
+### API REST construído em NodeJS para facilitar a administração de restaurante, podendo se cadastrar, adicionar entradas e saídas, e ver o extrato.  Já que os preços de insumos sempre mudam, podemos adicionar, atualizar e deletar os insumos, preparos e receitas, assim consultar seus custos e poder precificar de acordo com o custo atual.
 
 # Funcionalidades
 

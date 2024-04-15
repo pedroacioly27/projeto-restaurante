@@ -99,10 +99,74 @@ const adicionarPreparo = async (req, res) => {
     }
 }
 
+const atualizarPreparo = async (req, res) => {
+    const { idPreparo } = req.params
+    const { nome, peso } = req.body
+    const { id } = req.usuario
+    if (!peso && !nome) {
+        return res.status(400).json({ mensagem: 'Precisa informar ao menos um campo para atualizar' })
+    }
+    try {
+        const buscarPreparo = await knex('preparos').where({ id: idPreparo, usuario_id: id }).first()
+        if (!buscarPreparo) {
+            return res.status(404).json({ mensagem: 'Preparo não encontrado' })
+        }
+        if (nome) {
+            const buscarNome = await knex('preparos').where({ nome, usuario_id: id }).first()
 
+            if (buscarNome && buscarNome.nome !== buscarPreparo.nome) {
+                return res.status(400).json({ mensagem: "Nome já cadastrado" })
+            }
+        }
+
+        const atualizar = await knex('preparos').update({ nome, peso }).where({ id: idPreparo, usuario_id: id }).returning(['*'])
+        return res.status(200).json({
+            mensagem: 'Preparo atualizado com sucesso',
+            preparo: atualizar[0]
+        })
+
+
+    } catch (error) {
+        return res.status(500).json({ mensagem: 'Erro interno do servidor' })
+
+    }
+}
+
+const deletarPreparo = async (req, res) => {
+    const { idPreparo } = req.params
+    const { id } = req.usuario
+
+    try {
+        const buscarEmReceitas = await knex('preparo_receita').where({ preparo_id: idPreparo }).first()
+        const buscarEmInsumos = await knex('insumo_preparo').where({ preparo_id: idPreparo }).first()
+
+
+        if (buscarEmReceitas) {
+            return res.status(400).json({ mensagem: "Não pode deletar preparo cadastrado em receitas" })
+        }
+        if (buscarEmInsumos) {
+            return res.status(400).json({ mensagem: "Não pode deletar preparo com insumo cadastrado" })
+        }
+
+        const deletar = await knex('preparos').delete().where({ id: idPreparo, usuario_id: id })
+
+        if (deletar === 0) {
+            return res.status(404).json({ mensagem: 'Insumo não encontrado' })
+        }
+        if (deletar === 1) {
+            return res.status(200).json({ mensagem: 'Deletado com sucesso' })
+        }
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ mensagem: 'Erro interno do servidor' })
+    }
+}
 
 module.exports = {
     adicionarPreparo,
     listarPreparos,
-    adicionarInsumoAoPreparo
+    adicionarInsumoAoPreparo,
+    deletarPreparo,
+    atualizarPreparo
 }

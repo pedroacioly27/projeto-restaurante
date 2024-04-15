@@ -171,32 +171,29 @@ const cadastrarReceitas = async (req, res) => {
 }
 
 const atualizarReceita = async (req, res) => {
-    const { nome, novoNome } = req.body
+    const { idReceita } = req.params
     const { id } = req.usuario
+    const { nome } = req.body
 
     if (!nome) {
-        return res.status(400).json({ mensagem: 'Precisa informar o nome da receita' })
+        return res.status(400).json({ mensagem: 'Precisa informar o nome da receita para atualizar' })
     }
-    if (!novoNome) {
-        return res.status(400).json({ mensagem: 'Precisa informar o novo nome da receita' })
-    }
+
     try {
-        const buscarReceita = await knex('receitas').where({ nome, usuario_id: id }).first()
+        const buscarReceita = await knex('receitas').where({ id: idReceita, usuario_id: id }).first()
         if (!buscarReceita) {
             return res.status(404).json({ mensagem: 'Receita não encontrada' })
 
         }
-        const validarNovoNome = await knex('receitas').where({ nome: novoNome, usuario_id: id }).first()
-        if (nome !== novoNome && validarNovoNome) {
+        const validarNome = await knex('receitas').where({ nome, usuario_id: id }).first()
+        if (validarNome && buscarReceita.nome !== validarNome.nome) {
             return res.status(400).json({ mensagem: 'Receita já cadastrada' })
         }
-        const alterarReceita = await knex('receitas').update({ nome: novoNome }).where({ nome, usuario_id: id })
-
-        return res.json({
-            nome,
-            novoNome
+        const alterarReceita = await knex('receitas').update({ nome }).where({ id: idReceita, usuario_id: id }).returning(['*'])
+        return res.status(200).json({
+            mensagem: 'Receita atualizado com sucesso',
+            receita: alterarReceita[0]
         })
-
     } catch (error) {
         return res.status(500).json({ mensagem: 'Erro interno do servidor' })
 
@@ -205,14 +202,21 @@ const atualizarReceita = async (req, res) => {
 
 
 const deletarReceita = async (req, res) => {
-    const { nome } = req.body
+    const { idReceita } = req.params
     const { id } = req.usuario
 
-    if (!nome) {
-        return res.status(400).json({ mensagem: 'Precisa informar o nome para deletar' })
-    }
     try {
-        const deletar = await knex('receitas').delete().where({ nome, usuario_id: id })
+        const buscarEmInsumos = await knex('insumo_receita').where({ receita_id: idReceita }).first()
+        const buscarEmPreparos = await knex('preparo_receita').where({ receita_id: idReceita }).first()
+
+        if (buscarEmPreparos) {
+            return res.status(400).json({ mensagem: "Não pode deletar receita com preparo cadastrado" })
+        }
+        if (buscarEmInsumos) {
+            return res.status(400).json({ mensagem: "Não pode deletar receita com insumo cadastrado" })
+        }
+
+        const deletar = await knex('receitas').delete().where({ id: idReceita, usuario_id: id })
 
         if (deletar === 0) {
             return res.status(404).json({ mensagem: 'Receita não encontrada' })

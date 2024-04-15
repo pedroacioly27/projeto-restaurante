@@ -33,31 +33,29 @@ const cadastroInsumo = async (req, res) => {
 }
 
 const atualizarInsumo = async (req, res) => {
-    const { nome, peso, valor, novoNome } = req.body
+    const { idInsumo } = req.params
+    const { nome, peso, valor } = req.body
     const { id } = req.usuario
-    if (!nome) {
-        return res.status(400).json({ mensagem: 'Precisa informar o nome para atualizar os dados' })
-    }
-    if (!peso && !valor && !novoNome) {
+    if (!peso && !valor && !nome) {
         return res.status(400).json({ mensagem: 'Precisa informar ao menos um campo para atualizar' })
     }
     try {
-        const buscarInsumos = await knex('insumos').where({ nome, usuario_id: id }).first()
+        const buscarInsumos = await knex('insumos').where({ id: idInsumo, usuario_id: id }).first()
         if (!buscarInsumos) {
             return res.status(404).json({ mensagem: 'Insumo não encontrado' })
         }
-        if (novoNome) {
-            const buscarNome = await knex('insumos').where({ nome: novoNome, usuario_id: id }).first()
+        if (nome) {
+            const buscarNome = await knex('insumos').where({ nome, usuario_id: id }).first()
 
             if (buscarNome && buscarNome.nome !== buscarInsumos.nome) {
                 return res.status(400).json({ mensagem: "Nome já cadastrado" })
             }
         }
 
-        const atualizar = await knex('insumos').update({ nome: novoNome ?? nome, peso, valor }).where({ nome, usuario_id: id }).returning(['*'])
+        const atualizar = await knex('insumos').update({ nome, peso, valor }).where({ id: idInsumo, usuario_id: id }).returning(['*'])
         return res.status(200).json({
-            mensagem: 'atualizado com sucesso',
-            insumo: atualizar
+            mensagem: 'Insumos atualizado com sucesso',
+            insumo: atualizar[0]
         })
 
 
@@ -70,13 +68,21 @@ const atualizarInsumo = async (req, res) => {
 
 
 const deletarInsumo = async (req, res) => {
-    const { nome } = req.body
+    const { idInsumo } = req.params
     const { id } = req.usuario
-    if (!nome) {
-        return res.status(400).json({ mensagem: 'Precisa informar o nome para deletar' })
-    }
+
     try {
-        const deletar = await knex('insumos').delete().where({ nome, usuario_id: id })
+        const buscarEmReceitas = await knex('insumo_receita').where({ insumo_id: idInsumo }).first()
+        const buscarEmPreparos = await knex('insumo_preparo').where({ insumo_id: idInsumo }).first()
+
+        if (buscarEmPreparos) {
+            return res.status(400).json({ mensagem: "Não pode deletar insumo cadastrado em preparos" })
+        }
+        if (buscarEmReceitas) {
+            return res.status(400).json({ mensagem: "Não pode deletar insumo cadastrado em receitas" })
+        }
+
+        const deletar = await knex('insumos').delete().where({ id: idInsumo, usuario_id: id })
 
         if (deletar === 0) {
             return res.status(404).json({ mensagem: 'Insumo não encontrado' })
